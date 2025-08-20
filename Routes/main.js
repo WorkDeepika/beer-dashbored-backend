@@ -2,6 +2,7 @@ const express = require('express');
 const {welcome}=require("../controllers/wecomeController")
 const multer = require('multer');
 const User = require("../models/User");
+const { getSamplePlan } = require('../controllers/queryController');
 
 // Configure multer storage
 const storage = multer.memoryStorage(); // Store files in memory
@@ -10,6 +11,7 @@ const upload = multer({ storage });
 const router = express.Router();
 
 router.get('/', welcome)
+router.get('/getQueryData', getSamplePlan)
 router.post("/login", async (req, res) => {
     try {
       const { email, password } = req.body;
