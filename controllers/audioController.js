@@ -9,7 +9,7 @@ const getAudioUrlController = async (req, res) => {
     }
     const buffer= audioFile.buffer;
     const fileName = `data-${Date.now()}.wav`;
-    const bucketName="" //write down your bucket name
+    const bucketName="stimulus-coded-images" //write down your bucket name
     // Ensure the MIME type is set correctly for the audio Blob
     const params = {
       Bucket: bucketName,          // S3 bucket name
