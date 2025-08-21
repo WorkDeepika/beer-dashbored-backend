@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.get('/', welcome)
 router.get('/getQueryData', getSamplePlan)
-router.post('/add-audio', upload.single('file'),getAudioUrlController);
+router.get('/add-audio', upload.single('file'),getAudioUrlController);
 router.post("/login", async (req, res) => {
     try {
       const { email, password } = req.body;
