@@ -1,96 +1,106 @@
 const DataModel = require('../models/dataModel');
 
 const getSamplePlan = async (req, res) => {
-    const result = await DataModel.aggregate([
-      {
-        $facet: {
-          // ✅ Main sample breakdown (faster version I shared earlier)
-          samplePlan: [
-            {
-              $group: {
-                _id: "$RecruitmentPanel",
-                total: { $sum: 1 },
-                nccsA: {
-                  $sum: {
-                    $cond: [{ $in: ["$NCCS", ["A1", "A2"]] }, 1, 0]
-                  }
-                },
-                nccsB: {
-                  $sum: {
-                    $cond: [{ $in: ["$NCCS", ["B1", "B2"]] }, 1, 0]
-                  }
-                },
-                age21_25: {
-                  $sum: {
-                    $cond: [
-                      { $in: ["$agrGroup", ["21-24 years", "21-25 years"]] },
-                      1,
-                      0
-                    ]
-                  }
-                },
-                age26_30: {
-                  $sum: {
-                    $cond: [
-                      { $in: ["$agrGroup", ["25-30 years", "26-30 years"]] },
-                      1,
-                      0
-                    ]
-                  }
-                },
-                age31_40: {
-                  $sum: {
-                    $cond: [
-                      { $in: ["$agrGroup", ["31-40 years", "31-35 years", "36-40 years"]] },
-                      1,
-                      0
-                    ]
-                  }
-                },  
-                male: {
-                  $sum: { $cond: [{ $eq: ["$QRQ2", "1"] }, 1, 0] }
-                },
-                female: {
-                  $sum: { $cond: [{ $eq: ["$QRQ2", "2"] }, 1, 0] }
-                }
-              }
-            }
-          ],
-  
-          // ✅ New breakdown for QRQ14 selections
-          rq14Selections: [
-            {
-              $group: {
-                _id: {
-                  panel: "$RecruitmentPanel",
-                  respondent: "$_id", // or use respondentId field if exists
-                  brand: "$QRQ14_label"
-                }
-              }
-            },
-            // Step 2: count how many times each brand appears (unique per respondent now)
-            {
-              $group: {
-                _id: {
-                  panel: "$_id.panel",
-                  brand: "$_id.brand"
-                },
-                count: { $sum: 1 }
-              }
-            },
-            // Step 3: reshape by panel
-            {
-              $group: {
-                _id: "$_id.panel",
-                brands: {
-                  $push: { brand: "$_id.brand", count: "$count" }
-                }
-              }
-            }
-          ]
-        }
+  const result = await DataModel.aggregate([
+    {
+      // Exclude test records
+      $match: {
+        $or: [
+          { isTest: { $exists: false } },   // no isTest field
+          { isTest: null },                 // null means false
+          { isTest: { $ne: "true" } }              // keep only those explicitly marked as "false"
+        ]
       }
-    ]);
+    },
+    {
+      $facet: {
+        // ✅ Main sample breakdown
+        samplePlan: [
+          {
+            $group: {
+              _id: "$RecruitmentPanel",
+              total: { $sum: 1 },
+              nccsA: {
+                $sum: {
+                  $cond: [{ $in: ["$NCCS", ["A1", "A2"]] }, 1, 0]
+                }
+              },
+              nccsB: {
+                $sum: {
+                  $cond: [{ $in: ["$NCCS", ["B1", "B2"]] }, 1, 0]
+                }
+              },
+              age21_25: {
+                $sum: {
+                  $cond: [
+                    { $in: ["$agrGroup", ["21-24 years", "21-25 years"]] },
+                    1,
+                    0
+                  ]
+                }
+              },
+              age26_30: {
+                $sum: {
+                  $cond: [
+                    { $in: ["$agrGroup", ["25-30 years", "26-30 years"]] },
+                    1,
+                    0
+                  ]
+                }
+              },
+              age31_40: {
+                $sum: {
+                  $cond: [
+                    { $in: ["$agrGroup", ["31-40 years", "31-35 years", "36-40 years"]] },
+                    1,
+                    0
+                  ]
+                }
+              },
+              male: {
+                $sum: { $cond: [{ $eq: ["$QRQ2", "1"] }, 1, 0] }
+              },
+              female: {
+                $sum: { $cond: [{ $eq: ["$QRQ2", "2"] }, 1, 0] }
+              }
+            }
+          }
+        ],
+
+        // ✅ QRQ14 selections (unique per respondent)
+        rq14Selections: [
+          {
+            $group: {
+              _id: {
+                panel: "$RecruitmentPanel",
+                respondent: "$_id",   // or respondentId field
+                brand: "$QRQ14"       // ✅ use code instead of label
+              }
+            }
+          },
+          // Step 2: count unique respondents per brand
+          {
+            $group: {
+              _id: {
+                panel: "$_id.panel",
+                brand: "$_id.brand"
+              },
+              count: { $sum: 1 }
+            }
+          },
+          // Step 3: reshape by panel
+          {
+            $group: {
+              _id: "$_id.panel",
+              brands: {
+                $push: { brand: "$_id.brand", count: "$count" }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]);
       
     const panels = [
       "Tuborg Green (TBG)",
