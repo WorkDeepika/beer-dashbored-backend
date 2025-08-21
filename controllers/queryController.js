@@ -180,13 +180,21 @@ const getSamplePlan = async (req, res) => {
     
   
     // 🔹 Prepare clean response
+    // const panels = [
+    //   "Tuborg Green",
+    //   "Carlsberg Elephant",
+    //   "Tuborg Classic",
+    //   "Carlsberg Smooth",
+    //   "Tuborg Ice Draft",
+    //   "1664 Blanc"
+    // ];
     const panels = [
-      "Tuborg Green",
-      "Carlsberg Elephant",
-      "Tuborg Classic",
-      "Carlsberg Smooth",
-      "Tuborg Ice Draft",
-      "1664 Blanc"
+      "Tuborg Green (TBG)",
+      "Carlsberg Elephant (CBE)",
+      "Tuborg Classic (TBC)",
+      "Carlsberg Smooth (CBS)",
+      "Tuborg Ice Draft (TBI)",
+      "1664 Blanc (BLC)"
     ];
   
     let finalResult = {};
