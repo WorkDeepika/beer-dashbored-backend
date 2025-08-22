@@ -22,12 +22,12 @@ const getSamplePlan = async (req, res) => {
               total: { $sum: 1 },
               nccsA: {
                 $sum: {
-                  $cond: [{ $in: ["$NCCS", ["A1", "A2"]] }, 1, 0]
+                  $cond: [{ $in: ["$NCCS", ["A1", "A2", "A3"]] }, 1, 0]
                 }
               },
               nccsB: {
                 $sum: {
-                  $cond: [{ $in: ["$NCCS", ["B1", "B2"]] }, 1, 0]
+                  $cond: [{ $in: ["$NCCS", ["B1", "B2", "B3"]] }, 1, 0]
                 }
               },
               age21_25: {
